@@ -64,16 +64,17 @@ export class GetSpendingUseCase {
 
         transactions.forEach((transaction) => {
             const value = transaction.value.toNumber();
-            const amount = transaction.receiver_id === userId ? value : -value;
+            if (transaction.receiver_id !== userId) {
 
-            total += amount;
+                total += value;
 
-            const dateKey = this.getGroupKey(transaction.createdAt, period);
+                const dateKey = this.getGroupKey(transaction.createdAt, period);
 
-            if (!groupedData[dateKey]) {
-                groupedData[dateKey] = 0;
+                if (!groupedData[dateKey]) {
+                    groupedData[dateKey] = 0;
+                }
+                groupedData[dateKey] += value;
             }
-            groupedData[dateKey] += amount;
         });
 
         const periods = this.generatePeriods(period, startDate);
