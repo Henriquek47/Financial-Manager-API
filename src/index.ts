@@ -7,6 +7,7 @@ import { errorMiddlewares } from "./middlewares/error_middlewares";
 dotenv.config();
 
 export const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_key';
+const port = process.env.PORT || 3333;
 
 
 const app = express();
@@ -17,6 +18,6 @@ app.use(routes);
 
 app.use(errorMiddlewares);
 
-app.listen(3333, () => {
+app.listen(port, () => {
     console.log('Server running on http://0.0.0.0:3333');
   });
