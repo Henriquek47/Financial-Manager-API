@@ -4,20 +4,46 @@ export class GetSpendingUseCase {
     private getPeriodRange(period: "weekly" | "monthly" | "yearly") {
         const now = new Date();
         let startDate: Date;
-        let endDate = new Date(now); 
+        let endDate = new Date(now);
 
         if (period === "weekly") {
-            const firstDayOfWeek = now.getDate() - now.getDay();  
+            const firstDayOfWeek = now.getDate() - now.getDay();
             startDate = new Date(now.getFullYear(), now.getMonth(), firstDayOfWeek);
         } else if (period === "monthly") {
-            startDate = new Date(now.getFullYear(), now.getMonth(), 1); 
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
         } else if (period === "yearly") {
-            startDate = new Date(now.getFullYear(), 0, 1); 
+            startDate = new Date(now.getFullYear(), 0, 1);
         } else {
             throw new Error("Invalid period specified");
         }
 
         return { startDate, endDate };
+    }
+
+    private generatePeriods(period: "weekly" | "monthly" | "yearly", startDate: Date): string[] {
+        const periods: string[] = [];
+        const now = new Date();
+
+        if (period === "weekly") {
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(startDate);
+                day.setDate(startDate.getDate() + i);
+                periods.push(day.toLocaleDateString("pt-BR", { weekday: "long" }));
+            }
+        } else if (period === "monthly") {
+            const weeksInMonth = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 0).getDate()) / 7);
+            for (let i = 1; i <= weeksInMonth; i++) {
+                periods.push(`${i}`);
+            }
+        } else if (period === "yearly") {
+            for (let i = 0; i < 12; i++) {
+                const month = new Date(startDate);
+                month.setMonth(i);
+                periods.push(month.toLocaleDateString("pt-BR", { month: "long" }));
+            }
+        }
+
+        return periods;
     }
 
     async execute(userId: string, period: "weekly" | "monthly" | "yearly" = "weekly") {
@@ -34,8 +60,7 @@ export class GetSpendingUseCase {
         });
 
         let total = 0;
-
-        const groupedData: { [key: string]: number } = {}; 
+        const groupedData: { [key: string]: number } = {};
 
         transactions.forEach((transaction) => {
             const value = transaction.value.toNumber();
@@ -51,12 +76,16 @@ export class GetSpendingUseCase {
             groupedData[dateKey] += amount;
         });
 
+        const periods = this.generatePeriods(period, startDate);
+
+        const breakdown = periods.map((periodKey) => ({
+            period: periodKey,
+            totalSpent: groupedData[periodKey] || 0,
+        }));
+
         return {
             total,
-            breakdown: Object.entries(groupedData).map(([key, value]) => ({
-                period: key,
-                totalSpent: value,
-            })),
+            breakdown,
         };
     }
 
@@ -66,7 +95,7 @@ export class GetSpendingUseCase {
             return parsedDate.toLocaleDateString("pt-BR", { weekday: "long" });
         } else if (period === "monthly") {
             const weekNumber = Math.ceil(parsedDate.getDate() / 7);
-            return `Week ${weekNumber}`;
+            return `${weekNumber}`;
         } else if (period === "yearly") {
             return parsedDate.toLocaleDateString("pt-BR", { month: "long" });
         }

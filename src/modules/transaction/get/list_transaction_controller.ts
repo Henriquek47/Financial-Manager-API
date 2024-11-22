@@ -20,7 +20,7 @@ export class ListTransactionController {
         const endDateParsed = endDate ? new Date(endDate as string) : undefined;
 
         if (endDateParsed != null) {
-            endDateParsed!.setDate(endDateParsed.getDate() + 1);
+            endDateParsed!.setDate(endDateParsed.getDate() + 2);
         }
 
 

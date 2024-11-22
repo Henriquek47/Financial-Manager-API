@@ -9,8 +9,7 @@ type JwtPayload = {
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     const { authorization } = req.headers;
-    console.log(authorization);
-
+ 
     if (!authorization) {
         throw new AppError("Não autorizado", 401);
     }
@@ -22,7 +21,6 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     }
 
     const { userId } = jwt.verify(token, process.env.JWT_SECRET ?? '') as JwtPayload;
-    console.log(userId);
 
     const user = await prisma.user.findUnique({
         where: {

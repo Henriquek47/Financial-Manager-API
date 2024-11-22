@@ -1,10 +1,13 @@
 import { prisma } from "../../../prisma/client";
 
 export class GetMonthSummaryUseCase {
-    async execute(userId: string): Promise<Object> {
+    async execute(userId: string, month: number): Promise<Object> {
         const now = new Date();
-        const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        const year = now.getFullYear();
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+
 
         const transactions = await prisma.transaction.findMany({
             where: {
@@ -19,6 +22,7 @@ export class GetMonthSummaryUseCase {
             }
         });
 
+
         let total = 0;
         const categoryExpenses: { [key: string]: number } = {};
 
@@ -29,13 +33,13 @@ export class GetMonthSummaryUseCase {
                 transaction.receiver_id === userId ? value : -value;
 
             total += amount;
-            if(transaction.category != null){
-            const categoryId = transaction.category.id;
-            if (!categoryExpenses[categoryId]) {
-                categoryExpenses[categoryId] = 0;
+            if (transaction.category != null) {
+                const categoryId = transaction.category.id;
+                if (!categoryExpenses[categoryId]) {
+                    categoryExpenses[categoryId] = 0;
+                }
+                categoryExpenses[categoryId] += amount;
             }
-            categoryExpenses[categoryId] += amount;
-        }
 
         });
 
@@ -49,7 +53,7 @@ export class GetMonthSummaryUseCase {
         const result = categoryResults.map((category) => ({
             category: {
                 ...category,
-                totalSpent: categoryExpenses[category.id] || 0, 
+                totalSpent: categoryExpenses[category.id] || 0,
             },
         }));
 
