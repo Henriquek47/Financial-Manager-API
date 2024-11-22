@@ -17,6 +17,6 @@ app.use(routes);
 
 app.use(errorMiddlewares);
 
-app.listen(3333, '0.0.0.0', () => {
+app.listen(3333, () => {
     console.log('Server running on http://0.0.0.0:3333');
   });
