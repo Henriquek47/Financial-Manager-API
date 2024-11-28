@@ -3,15 +3,15 @@ import { prisma } from "../../../prisma/client";
 
 export class ListTransactionUseCase {
     async execute(userId: string, offset: number, limit: number, startDate?: Date, endDate?: Date, categoryId?: string, sortByValue: "asc" | "desc" | undefined = undefined, sortByDate: "asc" | "desc" | undefined = undefined): Promise<Array<Transaction>> {
-        
-        const orderBy = [];
+
+        const orderBy: Array<{ value?: "asc" | "desc"; createdAt?: "asc" | "desc" }> = [];
 
         if (sortByValue) {
-            orderBy.push({ value: sortByValue });
+            orderBy.push({ value: "desc" });
         }
-        
+
         if (sortByDate) {
-            orderBy.push({ createdAt: sortByDate });
+            orderBy.push({ createdAt: "desc" });
         }
 
         const whereConditions: any = {
